@@ -1,7 +1,7 @@
 const axios=require('axios')
 const {FLIGHT_SERVICE_PATH}=require('../config/serverConfig')
 const {BookingRepository}=require('../repository/index');
-const { ServiceError } = require('../utils/errors');
+const { ServiceError } = require('../utils/errors/index');
 
 class BookingService{
     constructor(){
@@ -15,9 +15,11 @@ class BookingService{
            const response=await axios.get(getFlightRequestURL)
            const flightData=response.data.data;
            let flightPrice=flightData.price;
+
            if(data.noOfSeats>flightData.totalSeats){
             throw new ServiceError('Something went wrong in the booking process','Insufficient seats')
            }
+
            const totalCost=flightPrice * data.noOfSeats;
            const bookingPayload={...data,totalCost};
            const booking=await this.bookingRepository.create(bookingPayload)
@@ -27,6 +29,7 @@ class BookingService{
            return finalBooking;
        } 
        catch(error){
+        console.log(error)
         if(error.name=='ValidationError' || error.name=='RepositoryError') throw error;
         throw new ServiceError()
        }
